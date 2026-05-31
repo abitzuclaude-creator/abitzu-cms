@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind Railway/Render the app sits behind a TLS-terminating proxy —
+        // trust it so generated URLs, HTTPS detection, and host are correct.
+        $middleware->trustProxies(at: '*');
+
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);
