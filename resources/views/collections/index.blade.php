@@ -218,8 +218,8 @@ textarea.input{resize:vertical;min-height:64px;line-height:1.5}
 window.__ABITZU_CONFIG = {
   csrfToken: "{{ csrf_token() }}",
   apiBase: "",
-  currentUser: @json(auth()->user()->only('id','name','email','role')),
-  teamMembers: @json($agents->map(fn($u) => ['id'=>$u->id,'name'=>$u->name,'email'=>$u->email,'role'=>$u->role])),
+          currentUser: {!! json_encode(auth()->user()->only('id','name','email','role')) !!},
+          teamMembers: {!! json_encode($agents->map(fn($u) => ['id'=>$u->id,'name'=>$u->name,'email'=>$u->email,'role'=>$u->role])) !!},
   initialInvoices: @json($invoices),
 };
 </script>
