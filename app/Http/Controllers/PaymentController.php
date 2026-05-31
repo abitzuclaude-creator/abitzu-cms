@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\ProformaInvoice;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
@@ -25,7 +26,13 @@ class PaymentController extends Controller
         ]);
 
         $pi = ProformaInvoice::findOrFail($request->proforma_invoice_id);
-        $payment = $this->svc->record($pi, $request->all(), auth()->id());
+
+        try {
+            $payment = $this->svc->record($pi, $request->all(), auth()->id());
+        } catch (\InvalidArgumentException $e) {
+            // PRD §10: payment exceeds balance / invalid amount → 422 on amount field
+            throw ValidationException::withMessages(['amount' => $e->getMessage()]);
+        }
 
         return response()->json(['ok' => true, 'payment' => $payment, 'new_balance' => $pi->fresh()->balance_due, 'new_status' => $pi->fresh()->status]);
     }

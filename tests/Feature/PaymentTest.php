@@ -92,4 +92,19 @@ class PaymentTest extends TestCase
 
         $this->assertDatabaseHas('payments', ['proforma_invoice_id' => $pi->id, 'amount' => 3000]);
     }
+
+    public function test_payment_api_rejects_overpayment_with_422(): void
+    {
+        $bank = BankAccount::create(['label' => 'Test', 'bank_name' => 'Test Bank', 'account_number_last4' => '1234']);
+        $user = User::factory()->create(['role' => 'owner']);
+        $pi = $this->setup_pi(10000, 5000);
+
+        $this->actingAs($user)->postJson('/api/payments', [
+            'proforma_invoice_id' => $pi->id, 'amount' => 6000,
+            'payment_date' => '2026-05-20', 'mode' => 'neft', 'bank_account_id' => $bank->id,
+        ])->assertStatus(422)->assertJsonValidationErrors('amount');
+
+        $this->assertDatabaseMissing('payments', ['proforma_invoice_id' => $pi->id]);
+        $this->assertEquals(5000, (float) $pi->fresh()->balance_due);
+    }
 }
