@@ -1,16 +1,19 @@
 <?php
 
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CollectionsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InteractionController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProformaController;
 use App\Http\Controllers\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +32,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    // Re-confirm password for sensitive actions (Laravel standard)
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
@@ -37,16 +39,39 @@ Route::middleware('auth')->group(function () {
     Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Profile / settings (PRD: /settings/profile)
     Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/settings/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Collections (kanban) — main screen
+    // Collections (kanban)
     Route::get('/collections', [CollectionsController::class, 'index'])->name('collections.index');
     Route::patch('/api/collections/{pi}/stage', [CollectionsController::class, 'updateStage'])->name('api.collections.stage');
     Route::patch('/api/collections/{pi}/assignee', [CollectionsController::class, 'updateAssignee'])->name('api.collections.assignee');
     Route::patch('/api/collections/{pi}/promise', [CollectionsController::class, 'updatePromise'])->name('api.collections.promise');
+
+    // Clients CRUD
+    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('/clients/create', [ClientController::class, 'create'])->name('clients.create');
+    Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
+    Route::get('/clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+    Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+    Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+
+    // Proforma Invoice CRUD
+    Route::get('/proformas', [ProformaController::class, 'index'])->name('proformas.index');
+    Route::get('/proformas/create', [ProformaController::class, 'create'])->name('proformas.create');
+    Route::post('/proformas', [ProformaController::class, 'store'])->name('proformas.store');
+    Route::get('/proformas/{proforma}', [ProformaController::class, 'show'])->name('proformas.show');
+    Route::get('/proformas/{proforma}/edit', [ProformaController::class, 'edit'])->name('proformas.edit');
+    Route::put('/proformas/{proforma}', [ProformaController::class, 'update'])->name('proformas.update');
+
+    // Agent Management
+    Route::get('/agents', [AgentController::class, 'index'])->name('agents.index');
+    Route::get('/agents/create', [AgentController::class, 'create'])->name('agents.create');
+    Route::post('/agents', [AgentController::class, 'store'])->name('agents.store');
+    Route::get('/agents/{agent}/edit', [AgentController::class, 'edit'])->name('agents.edit');
+    Route::put('/agents/{agent}', [AgentController::class, 'update'])->name('agents.update');
+    Route::patch('/api/agents/{agent}/toggle', [AgentController::class, 'toggle'])->name('api.agents.toggle');
 
     // Payments
     Route::post('/api/payments', [PaymentController::class, 'store'])->name('api.payments.store');
